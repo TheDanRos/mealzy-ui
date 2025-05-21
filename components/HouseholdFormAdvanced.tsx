@@ -1,4 +1,4 @@
-// HouseholdFormAdvanced.tsx – bereinigt
+// HouseholdFormAdvanced.tsx – bereinigt und typisiert
 import { useState } from "react";
 
 export default function HouseholdFormAdvanced() {
@@ -17,10 +17,13 @@ export default function HouseholdFormAdvanced() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleArrayChange = (name: string, value: string) => {
+  const handleArrayChange = (
+    name: "preferences" | "allergies" | "equipment",
+    value: string
+  ) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: [...(prev as any)[name], value],
+      [name]: [...prev[name], value],
     }));
   };
 
