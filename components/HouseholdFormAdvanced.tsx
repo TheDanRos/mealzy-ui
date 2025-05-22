@@ -1,18 +1,28 @@
 // HouseholdFormAdvanced.tsx – bereinigt und typisiert
-import { useState } from "react";
+import { useState, FormEvent, ChangeEvent, KeyboardEvent } from "react";
+
+type MemberFormData = {
+  firstName: string;
+  lastName: string;
+  age: string;
+  role: string;
+  preferences: string[];
+  allergies: string[];
+  equipment: string[];
+};
 
 export default function HouseholdFormAdvanced() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<MemberFormData>({
     firstName: "",
     lastName: "",
     age: "",
     role: "",
-    preferences: [] as string[],
-    allergies: [] as string[],
-    equipment: [] as string[],
+    preferences: [],
+    allergies: [],
+    equipment: [],
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -21,13 +31,15 @@ export default function HouseholdFormAdvanced() {
     name: "preferences" | "allergies" | "equipment",
     value: string
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: [...prev[name], value],
-    }));
+    if (value.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: [...prev[name], value.trim()],
+      }));
+    }
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     console.log("Form data:", formData);
   };
@@ -60,7 +72,7 @@ export default function HouseholdFormAdvanced() {
       </select>
       <input
         placeholder="Ernährungspräferenz hinzufügen"
-        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+        onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
           if (e.key === "Enter") {
             e.preventDefault();
             const target = e.target as HTMLInputElement;
@@ -71,7 +83,7 @@ export default function HouseholdFormAdvanced() {
       />
       <input
         placeholder="Allergie hinzufügen"
-        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+        onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
           if (e.key === "Enter") {
             e.preventDefault();
             const target = e.target as HTMLInputElement;
@@ -82,7 +94,7 @@ export default function HouseholdFormAdvanced() {
       />
       <input
         placeholder="Küchengerät hinzufügen"
-        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+        onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
           if (e.key === "Enter") {
             e.preventDefault();
             const target = e.target as HTMLInputElement;
