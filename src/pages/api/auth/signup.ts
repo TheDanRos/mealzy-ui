@@ -1,12 +1,12 @@
-// pages/api/auth/signup.ts
+// src/pages/api/auth/signup.ts
+
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createServerClient } from "@supabase/ssr";
-import type { Database } from "@/types/supabase"; // Nur wenn du ein Typing hast, sonst entfernen
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).end();
 
-  const supabase = createServerClient<Database>(req, res, {
+  const supabase = createServerClient(req, res, {
     supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
     supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   });
