@@ -6,10 +6,10 @@ import { createServerClient } from "@supabase/ssr";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).end();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabase = createServerClient(req, res, {
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  });
 
   const { email, password, first_name, last_name, household_name } = req.body;
 
