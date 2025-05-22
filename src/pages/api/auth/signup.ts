@@ -1,4 +1,5 @@
 // Next.js API route simport type { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
