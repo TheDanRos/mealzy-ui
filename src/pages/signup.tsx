@@ -1,4 +1,5 @@
 "use client";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import { useState } from "react";
 import { useRouter } from "next/router";
