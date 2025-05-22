@@ -11,7 +11,6 @@ export default function AuthForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,9 +20,9 @@ export default function AuthForm() {
       : await supabase.auth.signUp({ email, password });
 
     if (error) {
-      toast({ title: "Fehler", description: error.message, variant: "destructive" });
+      toast.error(error.message);
     } else {
-      toast({ title: "Erfolg", description: isLogin ? "Eingeloggt" : "Konto erstellt" });
+      toast.success(isLogin ? "Eingeloggt" : "Konto erstellt");
     }
   };
 

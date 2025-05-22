@@ -3,58 +3,59 @@ import { createClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+interface Member {
+  id: string;
+  first_name: string;
+  last_name: string;
+  age: number;
+  role: string;
+}
+
 export default function HouseholdFormAdvanced() {
-  const [members, setMembers] = useState<any[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [age, setAge] = useState<number | null>(null);
+  const [age, setAge] = useState("");
   const [role, setRole] = useState("Elternteil");
+  const householdId = "demo-household-id"; // TODO: dynamisch setzen
 
-  // TODO: Dynamisch aus Session oder Kontext holen
-  const householdId = "dein-household-id";
+  const fetchMembers = async () => {
+    const { data, error } = await supabase.from("members").select("*").eq("household_id", householdId);
+    if (!error && data) setMembers(data);
+  };
 
   useEffect(() => {
-    const fetchMembers = async () => {
-      const { data, error } = await supabase
-        .from("members")
-        .select("*")
-        .eq("household_id", householdId);
-
-      if (!error && data) setMembers(data);
-    };
-
     fetchMembers();
   }, []);
 
-  const handleAddMember = async () => {
-    if (!firstName || !lastName || !age || !role) {
-      alert("Alle Felder müssen ausgefüllt sein.");
+  const saveMember = async () => {
+    if (!firstName || !lastName || !age) {
+      toast.error("Bitte alle Felder ausfüllen");
       return;
     }
-
-    const { data, error } = await supabase.from("members").insert({
+    const { error } = await supabase.from("members").insert({
       first_name: firstName,
       last_name: lastName,
-      age,
+      age: parseInt(age),
       role,
       household_id: householdId
     });
-
-    if (error) {
-      console.error("Fehler beim Speichern:", error);
-      alert("Fehler beim Speichern.");
-    } else {
-      setMembers((prev) => [...prev, ...(data || [])]);
+    if (!error) {
+      toast.success("Mitglied gespeichert");
       setFirstName("");
       setLastName("");
-      setAge(null);
+      setAge("");
       setRole("Elternteil");
+      fetchMembers();
+    } else {
+      toast.error("Fehler beim Speichern");
     }
   };
 
@@ -67,48 +68,25 @@ export default function HouseholdFormAdvanced() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="firstName">Vorname</Label>
-            <Input
-              id="firstName"
-              placeholder="z. B. Daniel"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-            />
+            <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="z. B. Daniel" />
           </div>
           <div>
             <Label htmlFor="lastName">Nachname</Label>
-            <Input
-              id="lastName"
-              placeholder="z. B. Rossmann"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-            />
+            <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="z. B. Rossmann" />
           </div>
           <div>
             <Label htmlFor="age">Alter</Label>
-            <Input
-              id="age"
-              type="number"
-              min="0"
-              value={age ?? ""}
-              onChange={(e) => setAge(Number(e.target.value))}
-            />
+            <Input id="age" type="number" min="0" value={age} onChange={(e) => setAge(e.target.value)} />
           </div>
           <div>
             <Label htmlFor="role">Rolle</Label>
-            <select
-              id="role"
-              className="w-full border rounded p-2"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
+            <select id="role" className="w-full border rounded p-2" value={role} onChange={(e) => setRole(e.target.value)}>
               <option>Elternteil</option>
               <option>Kind</option>
             </select>
           </div>
           <div className="col-span-full">
-            <Button className="mt-4" onClick={handleAddMember}>
-              Mitglied speichern
-            </Button>
+            <Button className="mt-4" onClick={saveMember}>Mitglied speichern</Button>
           </div>
         </div>
       </section>
