@@ -1,80 +1,61 @@
-"use client";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { createServerClient } from "@supabase/auth-helpers-nextjs";
+import type { Database } from "@/types/supabase"; // optional: deine DB-Typen
 
-import { useState } from "react";
-import { useRouter } from "next/router";
-import { createClient } from "@supabase/supabase-js";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method Not Allowed" });
+  }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+  const { email, password, first_name, last_name, household_name } = req.body;
 
-export default function SignUp() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [householdName, setHouseholdName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  if (!email || !password || !first_name || !last_name || !household_name) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const supabase = createServerClient<Database>({ req, res });
 
-    // 1. SignUp bei Supabase
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) {
-      toast.error("Signup fehlgeschlagen", { description: error.message });
-      setLoading(false);
-      return;
+  // 1. User erstellen
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        first_name,
+        last_name
+      }
     }
+  });
 
-    const user = data.user;
+  if (signUpError || !signUpData.user) {
+    return res.status(500).json({ error: signUpError?.message || "User creation failed" });
+  }
 
-    // 2. Haushalts-Eintrag anlegen
-    const { error: householdError } = await supabase.from("households").insert({
-      name: householdName,
-      owner_id: user?.id,
-    });
+  const userId = signUpData.user.id;
 
-    if (householdError) {
-      toast.error("Fehler beim Erstellen des Haushalts", { description: householdError.message });
-      setLoading(false);
-      return;
-    }
+  // 2. Household anlegen
+  const { data: householdData, error: householdError } = await supabase
+    .from("households")
+    .insert({ name: household_name })
+    .select()
+    .single();
 
-    toast.success("Konto erstellt! Bitte E-Mail bestätigen.");
-    router.push("/login");
-  };
+  if (householdError || !householdData) {
+    return res.status(500).json({ error: householdError?.message || "Household creation failed" });
+  }
 
-  return (
-    <div className="max-w-md mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Haushalt anlegen</h1>
-      <form onSubmit={handleSignUp} className="space-y-4">
-        <div>
-          <Label htmlFor="email">E-Mail</Label>
-          <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-        </div>
-        <div>
-          <Label htmlFor="password">Passwort</Label>
-          <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-        </div>
-        <div>
-          <Label htmlFor="household">Haushaltsname</Label>
-          <Input id="household" required value={householdName} onChange={(e) => setHouseholdName(e.target.value)} />
-        </div>
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Wird erstellt..." : "Konto erstellen"}
-        </Button>
-      </form>
-    </div>
-  );
+  // 3. Mitglied anlegen
+  const { error: memberError } = await supabase.from("members").insert({
+    user_id: userId,
+    household_id: householdData.id,
+    first_name,
+    last_name,
+    role: "Elternteil"
+  });
+
+  if (memberError) {
+    return res.status(500).json({ error: memberError.message });
+  }
+
+  return res.status(200).json({ message: "Signup successful" });
 }
