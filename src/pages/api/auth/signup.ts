@@ -6,14 +6,13 @@ import { createServerClient } from "@supabase/ssr";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).end();
 
-  const supabase = createServerClient(req, res, {
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  });
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const { email, password, first_name, last_name, household_name } = req.body;
 
-  // 1. User registrieren
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
@@ -25,7 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const user_id = authData.user.id;
 
-  // 2. Haushalt anlegen
   const { data: hhData, error: hhError } = await supabase
     .from("households")
     .insert({ name: household_name, owner_id: user_id })
@@ -36,7 +34,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: hhError?.message });
   }
 
-  // 3. Mitglied anlegen
   const { error: memberError } = await supabase.from("members").insert({
     user_id,
     household_id: hhData.id,
