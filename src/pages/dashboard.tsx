@@ -9,13 +9,20 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+interface Member {
+  id: string;
+  first_name: string;
+  last_name: string;
+  age: number;
+}
+
 export default function HouseholdFormAdvanced() {
-  const [members, setMembers] = useState<any[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
 
   useEffect(() => {
     const fetchMembers = async () => {
       const { data, error } = await supabase.from("members").select("*");
-      if (!error && data) setMembers(data);
+      if (!error && data) setMembers(data as Member[]);
     };
     fetchMembers();
   }, []);
