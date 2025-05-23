@@ -1,16 +1,22 @@
-import { createServerClient } from "@supabase/ssr";
+// src/lib/supabase/server.ts
 import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 
 export function createSupabaseServerClient() {
-  const cookieStore = cookies(); // KEIN await hier nötig – nur im API-Kontext!
+  const cookieStore = cookies();
+
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll: () => cookieStore.getAll(), // ← KEIN await nötig, weil cookies() in Middleware/Server-Komponenten synchron ist
-        set: (name, value, options) => cookieStore.set(name, value, options),
-        remove: (name) => cookieStore.set(name, "", { maxAge: -1 }),
+        getAll: () =>
+          Array.from(cookieStore.entries()).map(([name, value]) => ({ name, value })),
+        setAll: (cookiesToSet) => {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
+        },
       },
     }
   );
