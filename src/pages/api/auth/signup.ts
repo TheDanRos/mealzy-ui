@@ -29,7 +29,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   );
 
-  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+  const signUpResponse = await supabase.auth.signUp({
+  email,
+  password,
+});
+
+if (signUpResponse.error || !signUpResponse.data.user) {
+  return res.status(400).json({ error: signUpResponse.error?.message });
+}
+
+// 🔁 Direkt im Anschluss einloggen
+await supabase.auth.signInWithPassword({
+  email,
+  password,
+});
 
   if (signUpError || !signUpData.user) {
     return res.status(500).json({ error: signUpError?.message || "Signup failed" });
