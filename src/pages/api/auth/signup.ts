@@ -1,3 +1,5 @@
+// pages/api/auth/signup.ts
+
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createServerClient } from "@supabase/ssr";
 
@@ -10,8 +12,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: "Missing fields" });
   }
 
-  const supabase = createServerClient(req, res); // Hier korrekt mit @supabase/ssr
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => req.cookies,
+        set: (name, value, options) => {
+          res.setHeader("Set-Cookie", `${name}=${value}; Path=/; HttpOnly`);
+        },
+        remove: (name) => {
+          res.setHeader("Set-Cookie", `${name}=; Path=/; HttpOnly; Max-Age=0`);
+        },
+      },
+    }
+  );
 
+  // 1. Benutzer registrieren
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
@@ -23,9 +40,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const user_id = signUpData.user.id;
 
+  // 2. Haushalt erstellen
   const { data: household, error: householdError } = await supabase
     .from("households")
-    .insert({ name: household_name, owner_id: user_id })
+    .insert({ name: household_name })
     .select()
     .single();
 
@@ -33,12 +51,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: "Household creation failed" });
   }
 
+  // 3. Mitglied verknüpfen
   const { error: memberError } = await supabase.from("members").insert({
     user_id,
     household_id: household.id,
     first_name,
     last_name,
-    role: "owner",
+    role: "Owner",
   });
 
   if (memberError) {
