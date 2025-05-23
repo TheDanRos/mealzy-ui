@@ -1,43 +1,35 @@
-import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 
 export default function SignupPage() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    first_name: "",
-    last_name: "",
-    household_name: "",
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      alert("Signup erfolgreich!");
-    } else {
-      alert(`Fehler: ${data.error}`);
-    }
-  };
-
   return (
-    <form onSubmit={handleSubmit} className="p-4">
-      <input name="email" onChange={handleChange} placeholder="Email" required />
-      <input name="password" type="password" onChange={handleChange} placeholder="Passwort" required />
-      <input name="first_name" onChange={handleChange} placeholder="Vorname" required />
-      <input name="last_name" onChange={handleChange} placeholder="Nachname" required />
-      <input name="household_name" onChange={handleChange} placeholder="Haushaltsname" required />
-      <button type="submit">Signup</button>
-    </form>
+    <div className="min-h-screen bg-[#FDFBF9] flex flex-col items-center justify-center p-6">
+      <div className="max-w-md w-full">
+        <div className="flex flex-col items-center mb-8">
+          <Image src="/icon.png" alt="Mealzy Logo" width={64} height={64} />
+          <h1 className="text-3xl font-bold text-[#2B2B2B] mt-4">Erstelle deinen Haushalt</h1>
+          <p className="text-[#2B2B2B] text-sm text-center mt-2">
+            Verwalte Mahlzeiten einfach und gemeinsam – für weniger Stress und mehr Genuss.
+          </p>
+        </div>
+
+        <form className="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+          <input type="email" placeholder="Email" className="w-full p-3 rounded-xl border border-[#DADADA] focus:outline-none" />
+          <input type="password" placeholder="Passwort" className="w-full p-3 rounded-xl border border-[#DADADA] focus:outline-none" />
+          <input type="text" placeholder="Vorname" className="w-full p-3 rounded-xl border border-[#DADADA] focus:outline-none" />
+          <input type="text" placeholder="Nachname" className="w-full p-3 rounded-xl border border-[#DADADA] focus:outline-none" />
+          <input type="text" placeholder="Haushaltsname" className="w-full p-3 rounded-xl border border-[#DADADA] focus:outline-none" />
+
+          <button type="submit" className="w-full bg-[#FF715B] text-white py-3 rounded-xl font-semibold hover:opacity-90">
+            Signup
+          </button>
+
+          <p className="text-center text-sm text-[#2B2B2B]">
+            Schon registriert?{' '}
+            <Link href="/login" className="text-[#FF715B] font-medium">Zum Login</Link>
+          </p>
+        </form>
+      </div>
+    </div>
   );
 }
