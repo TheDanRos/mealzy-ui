@@ -17,12 +17,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll: () => req.cookies,
-        set: (name, value, options) => {
-          res.setHeader("Set-Cookie", `${name}=${value}; Path=/; HttpOnly`);
-        },
-        remove: (name) => {
-          res.setHeader("Set-Cookie", `${name}=; Path=/; HttpOnly; Max-Age=0`);
+        getAll: () =>
+          Object.entries(req.cookies || {}).map(([name, value]) => ({ name, value })),
+        setAll: (cookiesToSet) => {
+          res.setHeader("Set-Cookie", cookiesToSet.map(({ name, value }) =>
+            `${name}=${value}; Path=/; HttpOnly`
+          ));
         },
       },
     }
