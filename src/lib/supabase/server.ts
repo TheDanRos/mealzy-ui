@@ -1,5 +1,3 @@
-// src/lib/supabase/server.ts
-
 import { createServerClient } from '@supabase/ssr';
 import { cookies as nextCookies } from 'next/headers';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -30,17 +28,17 @@ export function createSupabaseApiClient(req: NextApiRequest, res: NextApiRespons
 }
 
 // For Middleware or Server Components (no req/res, use next/headers)
-export function createSupabaseMiddlewareClient() {
-  const cookieStore = nextCookies();
+export async function createSupabaseMiddlewareClient() {
+  const cookieStore = await nextCookies(); // ⬅️ Fix: await hinzufügen!
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: (name) => cookieStore.get(name)?.value,
-        set: () => {},
-        remove: () => {},
+        get: (name) => cookieStore.get(name)?.value ?? null,
+        set: () => {}, // Optional: implementieren wenn nötig
+        remove: () => {}, // Optional
       },
     }
   );
