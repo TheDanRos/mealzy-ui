@@ -17,22 +17,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll: () =>
-          Object.entries(req.cookies || {}).map(([name, value]) => ({ name, value })),
-        setAll: (cookiesToSet) => {
-          res.setHeader("Set-Cookie", cookiesToSet.map(({ name, value }) =>
-            `${name}=${value}; Path=/; HttpOnly`
-          ));
+        get: (name) => req.cookies[name],
+        set: (name, value, options) => {
+          const cookie = `${name}=${value}; Path=/; HttpOnly; SameSite=Lax`;
+          res.setHeader("Set-Cookie", cookie);
+        },
+        remove: (name) => {
+          res.setHeader("Set-Cookie", `${name}=; Path=/; Max-Age=0`);
         },
       },
     }
   );
 
-  // 1. Benutzer registrieren
-  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-    email,
-    password,
-  });
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
 
   if (signUpError || !signUpData.user) {
     return res.status(500).json({ error: signUpError?.message || "Signup failed" });
@@ -40,7 +37,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const user_id = signUpData.user.id;
 
-  // 2. Haushalt erstellen
   const { data: household, error: householdError } = await supabase
     .from("households")
     .insert({ name: household_name })
@@ -51,7 +47,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: "Household creation failed" });
   }
 
-  // 3. Mitglied verknüpfen
   const { error: memberError } = await supabase.from("members").insert({
     user_id,
     household_id: household.id,
