@@ -10,12 +10,13 @@ export function createSupabaseServerClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll: () =>
-          Array.from(cookieStore.entries()).map(([name, value]) => ({ name, value })),
-        setAll: (cookiesToSet) => {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
-          });
+        get: (name: string) => cookieStore.get(name)?.value,
+        set: (name: string, value: string, options) => {
+          // Du kannst hier `options` für Sicherheit weiter anpassen (z. B. maxAge, secure, etc.)
+          document.cookie = `${name}=${value}; Path=/; HttpOnly`;
+        },
+        remove: (name: string) => {
+          document.cookie = `${name}=; Path=/; HttpOnly; Max-Age=0`;
         },
       },
     }
