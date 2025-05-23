@@ -6,7 +6,7 @@ export default function SignupPage() {
     <div className="min-h-screen bg-[#FDFBF9] flex flex-col items-center justify-center p-6">
       <div className="max-w-md w-full">
         <div className="flex flex-col items-center mb-8">
-          <Image src="/icon.png" alt="Mealzy Logo" width={64} height={64} />
+          <Image src="/images/icon.png" alt="Mealzy Logo" width={64} height={64} />
           <h1 className="text-3xl font-bold text-[#2B2B2B] mt-4">Erstelle deinen Haushalt</h1>
           <p className="text-[#2B2B2B] text-sm text-center mt-2">
             Verwalte Mahlzeiten einfach und gemeinsam – für weniger Stress und mehr Genuss.

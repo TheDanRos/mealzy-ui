@@ -6,7 +6,7 @@ export default function LandingPage() {
     <main className="min-h-screen bg-[#FDFBF9] text-[#2B2B2B] font-sans">
       <header className="flex items-center justify-between p-6 max-w-6xl mx-auto">
         <div className="flex items-center gap-3">
-          <Image src="/icon.png" alt="Mealzy Logo" width={40} height={40} />
+          <Image src="/images/icon.png" alt="Mealzy Logo" width={40} height={40} />
           <span className="text-xl font-bold tracking-tight">Mealzy</span>
         </div>
         <div className="flex gap-4">
