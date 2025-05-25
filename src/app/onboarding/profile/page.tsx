@@ -1,9 +1,9 @@
-// pages/onboarding/profile.tsx
+// app/onboarding/profile/page.tsx
 
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 export default function OnboardingProfile() {

@@ -1,9 +1,7 @@
-// pages/onboarding/invite.tsx
-
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
@@ -31,7 +29,7 @@ export default function InvitePage() {
     };
 
     fetchHousehold();
-  }, [supabase]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,9 +55,9 @@ export default function InvitePage() {
     <div className="min-h-screen bg-[#FDFBF9] flex items-center justify-center">
       <div className="bg-white p-6 rounded-2xl shadow-md w-full max-w-md">
         <div className="flex flex-col items-center mb-6">
-          <Image src="/images/icon.png" alt="Mealzy Logo" width={40} height={40} />
-          <h1 className="text-2xl font-bold text-[#2B2B2B] mt-2">Mealzy</h1>
-          <p className="text-sm text-[#2B2B2B] mt-1">Lade deine Haushaltsmitglieder ein</p>
+          <Image src="/images/icon.png" alt="Mealzy Logo" width={60} height={60} />
+          <h1 className="text-3xl font-bold text-[#2B2B2B] mt-2">Mealzy</h1>
+          <p className="text-base text-[#2B2B2B] mt-1">Lade deine Haushaltsmitglieder ein</p>
         </div>
 
         {success && (

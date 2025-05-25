@@ -1,13 +1,11 @@
-// pages/signup.tsx
+// app/signup/page.tsx
 
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/router";
 import Image from "next/image";
 
-export default function Signup() {
-  const router = useRouter();
+export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -34,11 +32,15 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF9] flex flex-col items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-[#FDFBF9] flex flex-col items-center justify-center px-4 py-12 font-inter text-[#2B2B2B]">
+      <div className="flex flex-col items-center mb-6 text-center">
+        <Image src="/images/icon.png" alt="Mealzy Logo" width={60} height={60} />
+        <h1 className="text-3xl font-bold font-dm-sans mt-2">Mealzy</h1>
+        <p className="text-sm mt-1">Mehr Zeit. Weniger Stress. Besser essen.</p>
+      </div>
 
-      {/* Card */}
       <div className="bg-white p-6 rounded-2xl shadow-md w-full max-w-md">
-        <h2 className="text-xl font-semibold text-[#2B2B2B] mb-4">Registrieren</h2>
+        <h2 className="text-xl font-semibold mb-4">Registrieren</h2>
 
         {success ? (
           <p className="text-[#8EE4AF] text-center font-medium">
