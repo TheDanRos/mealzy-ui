@@ -1,33 +1,32 @@
-// src/app/api/household/create.ts
+// src/pages/api/household/create.ts
 
+import { NextApiRequest, NextApiResponse } from "next";
 import { createServerClient } from "@supabase/ssr";
-import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: NextRequest) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "POST") return res.status(405).end();
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: (name) => req.cookies.get(name)?.value,
-        set: (name, value, options) => {
-          const response = NextResponse.next();
-          response.cookies.set({ name, value, ...options });
-          return response;
+        get: (key) => req.cookies[key],
+        set: (key, value, options) => {
+          const cookie = `${key}=${value}; Path=/; HttpOnly; SameSite=Lax`;
+          res.setHeader("Set-Cookie", cookie);
         },
-        remove: (name, options) => {
-          const response = NextResponse.next();
-          response.cookies.set({ name, value: "", ...options });
-          return response;
+        remove: (key) => {
+          res.setHeader("Set-Cookie", `${key}=; Path=/; Max-Age=0`);
         },
       },
     }
   );
 
-  const { name } = await req.json();
+  const { name } = req.body;
 
   if (!name) {
-    return NextResponse.json({ error: "Missing household name" }, { status: 400 });
+    return res.status(400).json({ error: "Missing household name" });
   }
 
   const {
@@ -36,15 +35,15 @@ export async function POST(req: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user || authError) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return res.status(401).json({ error: "Not authenticated" });
   }
 
   const { error: insertError } = await supabase.from("households").insert({ name });
 
   if (insertError) {
-    console.error("Insert error:", insertError);
-    return NextResponse.json({ error: "Insert failed" }, { status: 500 });
+    console.error("❌ Insert error:", insertError);
+    return res.status(500).json({ error: "Insert failed" });
   }
 
-  return NextResponse.json({ message: "Household created" });
+  return res.status(200).json({ message: "Household created" });
 }
