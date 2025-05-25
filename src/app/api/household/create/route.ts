@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 import type { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 
 export async function POST(req: Request) {
-  const cookieStore = cookies() as ReadonlyRequestCookies;
+  const cookieStore = cookies() as unknown as ReadonlyRequestCookies;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -35,9 +35,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const { error: insertError } = await supabase
-    .from("households")
-    .insert({ name });
+  const { error: insertError } = await supabase.from("households").insert({ name });
 
   if (insertError) {
     console.error("❌ Insert error:", insertError);
