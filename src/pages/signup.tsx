@@ -35,12 +35,6 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] flex flex-col items-center justify-center px-4 py-12">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <Image src="/images/icon.png" alt="Mealzy Logo" width={50} height={50} className="mx-auto mb-2" />
-        <h1 className="text-3xl font-bold text-[#2B2B2B] font-dm-sans">Mealzy</h1>
-        <p className="text-sm text-[#2B2B2B] font-inter">Mehr Zeit. Weniger Stress. Besser essen.</p>
-      </div>
 
       {/* Card */}
       <div className="bg-white p-6 rounded-2xl shadow-md w-full max-w-md">

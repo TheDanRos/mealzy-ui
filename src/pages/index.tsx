@@ -102,17 +102,6 @@ export default function Home() {
           </Link>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-[#FDFBF9] text-center py-8 text-sm text-[#2B2B2B] font-inter">
-        <p>© 2025 Mealzy</p>
-        <nav className="mt-2 space-x-4">
-          <Link href="/faq">FAQ</Link>
-          <Link href="/datenschutz">Datenschutz</Link>
-          <Link href="/impressum">Impressum</Link>
-        </nav>
-      </footer>
-    
     </Layout>
   );
 }
