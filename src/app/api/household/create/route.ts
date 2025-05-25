@@ -1,19 +1,20 @@
 // src/app/api/household/create/route.ts
+
 import { createServerClient } from "@supabase/ssr";
-import { cookies as getCookies } from "next/headers";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const cookieStore = getCookies();
+  const cookieStore = cookies();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: (key) => cookieStore.get(key)?.value,
-        set: () => {}, // API Routes unterstützen keine Set-Cookies
-        remove: () => {},
+        get: (name) => cookieStore.get(name)?.value,
+        set: () => {}, // no-op in API Routes
+        remove: () => {}, // no-op in API Routes
       },
     }
   );
@@ -33,14 +34,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const { error: insertError } = await supabase
+  const { data: household, error: insertError } = await supabase
     .from("households")
-    .insert({ name });
+    .insert({ name })
+    .select()
+    .single();
 
   if (insertError) {
     console.error("❌ Insert error:", insertError);
     return NextResponse.json({ error: "Insert failed" }, { status: 500 });
   }
 
-  return NextResponse.json({ message: "Household created" });
+  return NextResponse.json({ message: "Household created", household });
 }
