@@ -3,9 +3,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import type { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 
 export async function POST(req: Request) {
-  const cookieStore = cookies(); // ✅ kein await hier!
+  const cookieStore = cookies() as ReadonlyRequestCookies;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,8 +14,8 @@ export async function POST(req: Request) {
     {
       cookies: {
         get: (name) => cookieStore.get(name)?.value,
-        set: () => {}, // ❌ no-op in API Routes
-        remove: () => {}, // ❌ no-op in API Routes
+        set: () => {},
+        remove: () => {},
       },
     }
   );
