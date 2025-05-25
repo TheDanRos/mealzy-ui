@@ -1,51 +1,50 @@
-// pages/api/household-create.ts
+// src/app/api/household/create.ts
 
-import type { NextApiRequest, NextApiResponse } from "next";
 import { createServerClient } from "@supabase/ssr";
+import { NextRequest, NextResponse } from "next/server";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") return res.status(405).end();
-
-  const { name } = req.body;
-
-  if (!name) {
-    return res.status(400).json({ error: "Missing household name" });
-  }
-
+export async function POST(req: NextRequest) {
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: (key) => req.cookies[key] ?? "", // ✅ wichtig: fallback auf leeren String
-        set: (key, value, options) => {
-          res.setHeader("Set-Cookie", `${key}=${value}; Path=/; HttpOnly; SameSite=Lax`);
+        get: (name) => req.cookies.get(name)?.value,
+        set: (name, value, options) => {
+          const response = NextResponse.next();
+          response.cookies.set({ name, value, ...options });
+          return response;
         },
-        remove: (key) => {
-          res.setHeader("Set-Cookie", `${key}=; Path=/; Max-Age=0`);
+        remove: (name, options) => {
+          const response = NextResponse.next();
+          response.cookies.set({ name, value: "", ...options });
+          return response;
         },
       },
     }
   );
 
+  const { name } = await req.json();
+
+  if (!name) {
+    return NextResponse.json({ error: "Missing household name" }, { status: 400 });
+  }
+
   const {
     data: { user },
-    error: userError,
+    error: authError,
   } = await supabase.auth.getUser();
 
-  if (userError || !user) {
-    return res.status(401).json({ error: "Not authenticated" });
+  if (!user || authError) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const { error: insertError } = await supabase
-    .from("households")
-    .insert({ name });
-
+  const { error: insertError } = await supabase.from("households").insert({ name });
 
   if (insertError) {
-    console.error("❌ Insert error:", insertError);
-    return res.status(500).json({ error: "Could not create household" });
+    console.error("Insert error:", insertError);
+    return NextResponse.json({ error: "Insert failed" }, { status: 500 });
   }
 
-  return res.status(200).json({ message: "Haushalt erfolgreich erstellt" });
+  return NextResponse.json({ message: "Household created" });
 }
