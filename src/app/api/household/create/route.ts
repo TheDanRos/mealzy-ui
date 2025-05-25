@@ -4,7 +4,7 @@ import { cookies as getCookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const cookieStore = await getCookies(); // 
+  const cookieStore = getCookies();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,12 +12,8 @@ export async function POST(req: Request) {
     {
       cookies: {
         get: (key) => cookieStore.get(key)?.value,
-        set: (key, value, options) => {
-          // no-op, da Next.js API Routes das nicht unterstützen
-        },
-        remove: (key) => {
-          // dito
-        },
+        set: () => {}, // API Routes unterstützen keine Set-Cookies
+        remove: () => {},
       },
     }
   );
@@ -39,7 +35,7 @@ export async function POST(req: Request) {
 
   const { error: insertError } = await supabase
     .from("households")
-    .insert({ name }, { returning: "minimal" });
+    .insert({ name });
 
   if (insertError) {
     console.error("❌ Insert error:", insertError);
