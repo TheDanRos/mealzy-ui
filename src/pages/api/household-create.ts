@@ -6,34 +6,45 @@ import { createServerClient } from "@supabase/ssr";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).end();
 
+  const { name } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ error: "Missing household name" });
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll: () =>
-          Object.entries(req.cookies || {}).map(([name, value]) => ({
-            name,
-            value,
-          })),
-        setAll: (cookiesToSet) => {
-          res.setHeader(
-            "Set-Cookie",
-            cookiesToSet.map(({ name, value }) => `${name}=${value}; Path=/; HttpOnly`)
-          );
+        get: (key) => req.cookies[key] ?? "", // ✅ wichtig: fallback auf leeren String
+        set: (key, value, options) => {
+          res.setHeader("Set-Cookie", `${key}=${value}; Path=/; HttpOnly; SameSite=Lax`);
+        },
+        remove: (key) => {
+          res.setHeader("Set-Cookie", `${key}=; Path=/; Max-Age=0`);
         },
       },
     }
   );
 
-  const { name } = req.body;
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-  const { error } = await supabase.from("households").insert({ name });
-
-  if (error) {
-    console.error("❌ Household creation failed:", error);
-    return res.status(500).json({ error: "Failed to create household" });
+  if (userError || !user) {
+    return res.status(401).json({ error: "Not authenticated" });
   }
 
-  return res.status(200).json({ message: "Haushalt erstellt" });
+  const { error: insertError } = await supabase
+    .from("households")
+    .insert({ name }, { returning: "minimal" });
+
+  if (insertError) {
+    console.error("❌ Insert error:", insertError);
+    return res.status(500).json({ error: "Could not create household" });
+  }
+
+  return res.status(200).json({ message: "Haushalt erfolgreich erstellt" });
 }
