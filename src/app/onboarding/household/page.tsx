@@ -29,28 +29,17 @@ export default function OnboardingHousehold() {
       return;
     }
 
-    const { data: household, error: householdError } = await supabase
-      .from("households")
-      .insert({ name: householdName })
-      .select()
-      .single();
-
-    if (householdError || !household) {
-      setError("Haushalt konnte nicht erstellt werden.");
-      setLoading(false);
-      return;
-    }
-
-    const { error: memberError } = await supabase.from("members").insert({
-      user_id: user.id,
-      household_id: household.id,
-      first_name: "", // wird im nächsten Schritt ergänzt
-      last_name: "",
-      role: "Owner",
+    // ✅ Aufruf der eigenen API-Route mit Session-Cookie
+    const response = await fetch("/api/household/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: householdName }),
+      credentials: "include", // 👈 Session-Cookie wird mitgesendet
     });
 
-    if (memberError) {
-      setError("Fehler beim Verknüpfen des Benutzers.");
+    if (!response.ok) {
+      const { error: apiError } = await response.json();
+      setError(apiError || "Haushalt konnte nicht erstellt werden.");
       setLoading(false);
       return;
     }
@@ -81,7 +70,7 @@ export default function OnboardingHousehold() {
             className="w-full bg-[#FF715B] text-white py-2 rounded-xl hover:opacity-90 transition"
             disabled={loading}
           >
-            Haushalt anlegen
+            {loading ? "Wird erstellt..." : "Haushalt anlegen"}
           </button>
         </form>
       </div>

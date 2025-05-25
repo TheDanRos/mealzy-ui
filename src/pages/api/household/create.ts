@@ -4,18 +4,20 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { createServerClient } from "@supabase/ssr";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") return res.status(405).end();
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: (key) => req.cookies[key],
+        get: (key) => req.cookies[key] ?? "",
+
         set: (key, value, options) => {
           const cookie = `${key}=${value}; Path=/; HttpOnly; SameSite=Lax`;
           res.setHeader("Set-Cookie", cookie);
         },
+
         remove: (key) => {
           res.setHeader("Set-Cookie", `${key}=; Path=/; Max-Age=0`);
         },
