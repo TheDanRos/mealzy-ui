@@ -1,10 +1,8 @@
-// pages/dashboard.tsx
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 export default function Dashboard() {
