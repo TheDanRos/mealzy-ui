@@ -39,7 +39,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { error: insertError } = await supabase
     .from("households")
-    .insert({ name }, { returning: "minimal" });
+    .insert({ name });
+
 
   if (insertError) {
     console.error("❌ Insert error:", insertError);
