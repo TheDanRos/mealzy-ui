@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const cookieStore = cookies();
+  const cookieStore = cookies(); // ✅ kein await hier!
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,8 +13,8 @@ export async function POST(req: Request) {
     {
       cookies: {
         get: (name) => cookieStore.get(name)?.value,
-        set: () => {}, // no-op in API Routes
-        remove: () => {}, // no-op in API Routes
+        set: () => {}, // ❌ no-op in API Routes
+        remove: () => {}, // ❌ no-op in API Routes
       },
     }
   );
@@ -34,16 +34,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const { data: household, error: insertError } = await supabase
+  const { error: insertError } = await supabase
     .from("households")
-    .insert({ name })
-    .select()
-    .single();
+    .insert({ name });
 
   if (insertError) {
     console.error("❌ Insert error:", insertError);
     return NextResponse.json({ error: "Insert failed" }, { status: 500 });
   }
 
-  return NextResponse.json({ message: "Household created", household });
+  return NextResponse.json({ message: "Household created" }, { status: 200 });
 }
