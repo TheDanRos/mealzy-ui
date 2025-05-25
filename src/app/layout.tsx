@@ -1,6 +1,6 @@
 // src/app/layout.tsx
 
-import ".styles/globals.css";
+import "../styles/globals.css";
 import { DM_Sans, Inter } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
