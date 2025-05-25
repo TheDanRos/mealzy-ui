@@ -1,80 +1,93 @@
-import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+// pages/dashboard.tsx
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+"use client";
 
-interface Member {
-  id: string;
-  first_name: string;
-  last_name: string;
-  age: number;
-}
+import { useEffect, useState } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter } from "next/router";
+import Image from "next/image";
 
-export default function HouseholdFormAdvanced() {
-  const [members, setMembers] = useState<Member[]>([]);
+export default function Dashboard() {
+  const supabase = createClientComponentClient();
+  const router = useRouter();
+  const [household, setHousehold] = useState<any>(null);
+  const [members, setMembers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchMembers = async () => {
-      const { data, error } = await supabase.from("members").select("*");
-      if (!error && data) setMembers(data as Member[]);
+    const fetchDashboardData = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push("/signup");
+        return;
+      }
+
+      const { data: memberData, error: memberError } = await supabase
+        .from("members")
+        .select("*, households(*)")
+        .eq("user_id", user.id)
+        .single();
+
+      if (memberError || !memberData) {
+        console.error("Failed to load member data", memberError);
+        return;
+      }
+
+      setHousehold(memberData.households);
+
+      const { data: membersList, error: membersError } = await supabase
+        .from("members")
+        .select("first_name, last_name, user_id")
+        .eq("household_id", memberData.household_id);
+
+      if (membersError) {
+        console.error("Failed to load members", membersError);
+      } else {
+        setMembers(membersList);
+      }
+
+      setLoading(false);
     };
-    fetchMembers();
+
+    fetchDashboardData();
   }, []);
 
+  if (loading) return <div className="text-center mt-10">Lade Dashboard...</div>;
+
   return (
-    <div className="max-w-4xl mx-auto space-y-10 p-6">
-      <h1 className="text-2xl font-bold">Haushalt verwalten</h1>
-
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Mitglied hinzufügen</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="firstName">Vorname</Label>
-            <Input id="firstName" placeholder="z. B. Daniel" />
-          </div>
-          <div>
-            <Label htmlFor="lastName">Nachname</Label>
-            <Input id="lastName" placeholder="z. B. Rossmann" />
-          </div>
-          <div>
-            <Label htmlFor="age">Alter</Label>
-            <Input id="age" type="number" min="0" />
-          </div>
-          <div>
-            <Label htmlFor="role">Rolle</Label>
-            <select id="role" className="w-full border rounded p-2">
-              <option>Elternteil</option>
-              <option>Kind</option>
-            </select>
-          </div>
-          <div className="col-span-full">
-            <Button className="mt-4">Mitglied speichern</Button>
-          </div>
+    <div className="min-h-screen bg-[#FDFBF9] p-6">
+      <div className="max-w-3xl mx-auto">
+        <div className="flex items-center gap-3 mb-6">
+          <Image src="/images/icon.png" alt="Mealzy Icon" width={40} height={40} />
+          <h1 className="text-2xl font-bold text-[#2B2B2B]">
+            Haushalt: {household?.name || "Unbenannt"}
+          </h1>
         </div>
-      </section>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Haushaltsmitglieder</h2>
-        <ul className="space-y-2">
-          {members.map((m) => (
-            <li
-              key={m.id}
-              className="border p-4 rounded bg-white shadow-sm flex justify-between items-center"
-            >
-              <span>{m.first_name} {m.last_name} ({m.age})</span>
-              <Button variant="outline" size="sm">
-                Geschmacksprofil generieren
-              </Button>
-            </li>
-          ))}
-        </ul>
-      </section>
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-[#2B2B2B] mb-2">Mitglieder</h2>
+          <ul className="space-y-2">
+            {members.map((m) => (
+              <li key={m.user_id} className="p-2 border border-[#DADADA] rounded-xl">
+                {m.first_name} {m.last_name || "(Name fehlt)"} – Status: (Demo)
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-[#2B2B2B] mb-2">Geschmacksprofile</h2>
+          <p className="text-sm text-[#2B2B2B]">(Feature bald verfügbar)</p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold text-[#2B2B2B] mb-2">Einkaufsliste</h2>
+          <p className="text-sm text-[#2B2B2B]">(Feature bald verfügbar)</p>
+        </section>
+      </div>
     </div>
   );
 }

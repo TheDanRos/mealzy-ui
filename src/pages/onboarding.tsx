@@ -2,87 +2,63 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
-export default function OnboardingPage() {
+export default function Onboarding() {
   const router = useRouter();
-  const supabase = createClientComponentClient();
-
   const [householdName, setHouseholdName] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleCreate = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
+    setError("");
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (!user || userError) {
-      alert("Fehler beim Laden des Benutzers. Bitte erneut anmelden.");
-      router.push("/login");
-      return;
-    }
-
-    const { data: household, error: householdError } = await supabase
-      .from("households")
-      .insert({ name: householdName })
-      .select()
-      .single();
-
-    if (householdError || !household) {
-      alert("Fehler beim Erstellen des Haushalts");
-      setLoading(false);
-      return;
-    }
-
-    const { error: memberError } = await supabase.from("members").insert({
-      user_id: user.id,
-      household_id: household.id,
-      first_name: firstName,
-      last_name: lastName,
-      role: "Owner",
+    const response = await fetch("/api/household/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: householdName }),
     });
 
-    if (memberError) {
-      alert("Fehler beim Verknüpfen des Benutzers");
-      setLoading(false);
-      return;
+    if (response.ok) {
+      router.push("/dashboard");
+    } else {
+      const data = await response.json();
+      setError(data.error || "Fehler beim Erstellen des Haushalts");
     }
 
-    router.push("/dashboard");
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-cream text-graphite p-4">
-      <div className="w-full max-w-md space-y-4">
-        <h1 className="text-2xl font-bold text-center">Willkommen bei Mealzy</h1>
-        <p className="text-center">Bitte richte deinen Haushalt ein</p>
-        <Input
-          placeholder="Haushaltsname"
-          value={householdName}
-          onChange={(e) => setHouseholdName(e.target.value)}
-        />
-        <Input
-          placeholder="Vorname"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-        />
-        <Input
-          placeholder="Nachname"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-        />
-        <Button onClick={handleCreate} disabled={loading} className="w-full bg-coral hover:bg-opacity-90">
-          {loading ? "Wird erstellt..." : "Haushalt erstellen"}
-        </Button>
+    <div className="min-h-screen bg-[#FDFBF9] flex items-center justify-center">
+      <div className="bg-white p-6 rounded-2xl shadow-md w-full max-w-md">
+        <div className="flex flex-col items-center mb-6">
+          <Image src="/images/icon.png" alt="Mealzy Logo" width={40} height={40} />
+          <h1 className="text-2xl font-bold text-[#2B2B2B] mt-2">Mealzy</h1>
+          <p className="text-sm text-[#2B2B2B] mt-1">Haushalt anlegen und loslegen</p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            placeholder="Haushaltsname"
+            value={householdName}
+            onChange={(e) => setHouseholdName(e.target.value)}
+            className="w-full p-2 border border-[#DADADA] rounded-xl"
+            required
+          />
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#FF715B] text-white py-2 rounded-xl hover:opacity-90 transition"
+          >
+            {loading ? "Wird erstellt..." : "Haushalt anlegen"}
+          </button>
+        </form>
       </div>
     </div>
   );
