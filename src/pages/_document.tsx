@@ -1,13 +1,12 @@
-import { Html, Head, Main, NextScript } from "next/document";
+import { DM_Sans, Inter } from "next/font/google";
 
-export default function Document() {
+const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+
+export default function RootLayout({ children }) {
   return (
-    <Html lang="en">
-      <Head />
-      <body className="antialiased">
-        <Main />
-        <NextScript />
-      </body>
-    </Html>
+    <html lang="de" className={`${dmSans.variable} ${inter.variable}`}>
+      <body className="font-inter bg-[#FDFBF9] text-[#2B2B2B]">{children}</body>
+    </html>
   );
 }

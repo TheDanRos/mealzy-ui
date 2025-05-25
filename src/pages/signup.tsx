@@ -34,16 +34,22 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF9] flex items-center justify-center">
+    <div className="min-h-screen bg-[#FDFBF9] flex flex-col items-center justify-center px-4 py-12">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <Image src="/images/icon.png" alt="Mealzy Logo" width={50} height={50} className="mx-auto mb-2" />
+        <h1 className="text-3xl font-bold text-[#2B2B2B] font-dm-sans">Mealzy</h1>
+        <p className="text-sm text-[#2B2B2B] font-inter">Mehr Zeit. Weniger Stress. Besser essen.</p>
+      </div>
+
+      {/* Card */}
       <div className="bg-white p-6 rounded-2xl shadow-md w-full max-w-md">
-        <div className="flex flex-col items-center mb-6">
-          <Image src="/images/icon.png" alt="Mealzy Logo" width={40} height={40} />
-          <h1 className="text-2xl font-bold text-[#2B2B2B] mt-2">Mealzy</h1>
-          <p className="text-sm text-[#2B2B2B] mt-1">Mehr Zeit. Weniger Stress. Besser essen.</p>
-        </div>
         <h2 className="text-xl font-semibold text-[#2B2B2B] mb-4">Registrieren</h2>
+
         {success ? (
-          <p className="text-[#8EE4AF]">Bitte bestätige deine E-Mail-Adresse.</p>
+          <p className="text-[#8EE4AF] text-center font-medium">
+            ✅ Fast geschafft – bitte bestätige deine E-Mail-Adresse.
+          </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <input
@@ -51,28 +57,31 @@ export default function Signup() {
               placeholder="Vorname"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              className="w-full p-2 border border-[#DADADA] rounded-xl"
+              className="w-full p-3 border border-[#DADADA] rounded-xl"
+              required
             />
             <input
               type="email"
               placeholder="E-Mail"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 border border-[#DADADA] rounded-xl"
+              className="w-full p-3 border border-[#DADADA] rounded-xl"
+              required
             />
             <input
               type="password"
               placeholder="Passwort"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2 border border-[#DADADA] rounded-xl"
+              className="w-full p-3 border border-[#DADADA] rounded-xl"
+              required
             />
             {error && <p className="text-red-500 text-sm">{error}</p>}
             <button
               type="submit"
-              className="w-full bg-[#FF715B] text-white py-2 rounded-xl hover:opacity-90 transition"
+              className="w-full bg-[#FF715B] text-white py-3 rounded-xl hover:opacity-90 transition font-semibold"
             >
-              Registrieren
+              Jetzt kostenlos registrieren
             </button>
           </form>
         )}

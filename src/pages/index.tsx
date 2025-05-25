@@ -1,12 +1,13 @@
 // app/page.tsx – Mealzy Landingpage
 
+import Layout from "@/components/Layout";
 import Image from "next/image";
 import Link from "next/link";
 import { Brain, Users, ShoppingCart } from "lucide-react";
 
-export default function LandingPage() {
+export default function Home() {
   return (
-    <main>
+    <Layout>
       {/* Hero Section */}
       <section className="bg-[#FDFBF9] py-16 text-center">
         <div className="max-w-4xl mx-auto px-4">
@@ -111,6 +112,7 @@ export default function LandingPage() {
           <Link href="/impressum">Impressum</Link>
         </nav>
       </footer>
-    </main>
+    
+    </Layout>
   );
 }
