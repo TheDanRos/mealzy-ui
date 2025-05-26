@@ -18,7 +18,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const { error: insertError } = await supabase.from("households").insert({ name });
+  const { error: insertError } = await supabase
+    .from("households")
+    .insert({ name });
 
   if (insertError) {
     console.error("❌ Insert error:", insertError);
