@@ -1,19 +1,21 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 
 export async function POST(req: Request) {
-  const supabase = createServerClient();
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
-
+  const supabase = createClient();
   const { name } = await req.json();
 
   if (!name) {
     return NextResponse.json({ error: "Missing household name" }, { status: 400 });
+  }
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (!user || authError) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
   const { error: insertError } = await supabase.from("households").insert({ name });
