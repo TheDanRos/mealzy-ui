@@ -1,26 +1,17 @@
-// src/app/auth/callback/route.ts
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@/utils/supabase/server";
 
-export async function GET(request: Request) {
-  const cookieStore = cookies();
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: () => cookieStore, // ✅ direkt übergeben
-    }
-  );
+export async function GET() {
+  const supabase = createClient();
 
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser();
 
-  if (user) {
-    return NextResponse.redirect(new URL("/onboarding/household", request.url));
+  if (!user || error) {
+    return NextResponse.redirect(new URL("/login", process.env.NEXT_PUBLIC_SITE_URL));
   }
 
-  return NextResponse.redirect(new URL("/login", request.url));
+  return NextResponse.redirect(new URL("/onboarding/household", process.env.NEXT_PUBLIC_SITE_URL));
 }
