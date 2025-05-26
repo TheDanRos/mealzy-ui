@@ -18,10 +18,7 @@ export default function OnboardingHousehold() {
     setError("");
     setLoading(true);
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
 
     if (userError || !user) {
       setError("Du musst angemeldet sein, um fortzufahren.");
@@ -29,12 +26,10 @@ export default function OnboardingHousehold() {
       return;
     }
 
-    // ✅ Aufruf der eigenen API-Route mit Session-Cookie
     const response = await fetch("/api/household/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: householdName }),
-      credentials: "include", // 👈 Session-Cookie wird mitgesendet
     });
 
     if (!response.ok) {
