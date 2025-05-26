@@ -1,17 +1,37 @@
-// src/app/auth/callback/route.ts
-
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-export async function GET(request: Request) {
-  const requestUrl = new URL(request.url);
-  const code = requestUrl.searchParams.get("code");
+export async function GET(request: NextRequest) {
+  const cookieStore = cookies();
 
-  if (code) {
-    const supabase = createRouteHandlerClient({ cookies });
-    await supabase.auth.exchangeCodeForSession(code);
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get: (key) => cookieStore.get(key)?.value,
+        set: (key, value, options) => {
+          const response = NextResponse.next();
+          response.cookies.set({ name: key, value, ...options });
+          return response;
+        },
+        remove: (key) => {
+          const response = NextResponse.next();
+          response.cookies.set(key, "", { maxAge: -1 });
+          return response;
+        },
+      },
+    }
+  );
+
+  const { data, error } = await supabase.auth.getUser();
+
+  if (error || !data.user) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  return NextResponse.redirect(new URL("/onboarding/household", requestUrl));
+  // ✅ Weiterleitung zur Onboarding-Seite
+  return NextResponse.redirect(new URL("/onboarding/household", request.url));
 }
