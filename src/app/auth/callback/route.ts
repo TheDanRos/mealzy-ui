@@ -1,42 +1,39 @@
-// src/app/auth/callback/route.ts
-import { createClient } from "@/utils/supabase/server";
-import { NextResponse } from "next/server";
+import { createServerClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-export async function GET(request: Request) {
-  const supabase = createClient();
+export async function GET() {
+  const supabase = createServerClient(cookies());
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   if (!session) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    console.log("[auth/callback] Keine Session – Redirect zu /login");
+    return redirect("/login");
   }
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, household_id, name")
-    .eq("id", user.id)
+    .select()
+    .eq("id", session.user.id)
     .single();
 
   if (!profile) {
-    return NextResponse.redirect(new URL("/onboarding/household", request.url));
+    console.log("[auth/callback] Kein Profil – Redirect zu /onboarding/household");
+    return redirect("/onboarding/household");
   }
 
   if (!profile.household_id) {
-    return NextResponse.redirect(new URL("/onboarding/household", request.url));
+    console.log("[auth/callback] Kein Haushalt – Redirect zu /onboarding/household");
+    return redirect("/onboarding/household");
   }
 
   if (!profile.name) {
-    return NextResponse.redirect(new URL("/onboarding/profile", request.url));
+    console.log("[auth/callback] Kein Name – Redirect zu /onboarding/profile");
+    return redirect("/onboarding/profile");
   }
 
-  return NextResponse.redirect(new URL("/dashboard", request.url));
+  console.log("[auth/callback] Alles vollständig – Redirect zu /dashboard");
+  return redirect("/dashboard");
 }
