@@ -1,9 +1,8 @@
-// app/signup/page.tsx
-
 "use client";
 
 import { useState } from "react";
 import Image from "next/image";
+import { createClient } from "@/utils/supabase/client";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -12,22 +11,25 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  const supabase = createClient();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess(false);
 
-    const response = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, first_name: firstName }),
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { first_name: firstName }
+      }
     });
 
-    if (response.ok) {
-      setSuccess(true);
+    if (error) {
+      setError(error.message);
     } else {
-      const data = await response.json();
-      setError(data.error || "Ein Fehler ist aufgetreten.");
+      setSuccess(true);
     }
   };
 
@@ -72,15 +74,16 @@ export default function SignupPage() {
               className="w-full p-3 border border-[#DADADA] rounded-xl"
               required
             />
-            {error && <p className="text-red-500 text-sm">{error}</p>}
             <button
               type="submit"
-              className="w-full bg-[#FF715B] text-white py-3 rounded-xl hover:opacity-90 transition font-semibold"
+              className="w-full bg-[#2B2B2B] text-white p-3 rounded-xl hover:bg-[#1f1f1f] transition"
             >
-              Jetzt kostenlos registrieren
+              Registrieren
             </button>
           </form>
         )}
+
+        {error && <p className="text-red-500 text-sm mt-4 text-center">{error}</p>}
       </div>
     </div>
   );
