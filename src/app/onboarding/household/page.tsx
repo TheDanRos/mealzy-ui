@@ -1,40 +1,51 @@
+// src/app/onboarding/household/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import Image from "next/image";
 
 export default function OnboardingHousehold() {
   const router = useRouter();
   const supabase = createClientComponentClient();
 
-  const [householdName, setHouseholdName] = useState("");
+  const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const checkHousehold = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("household_id")
+        .eq("id", user?.id)
+        .single();
+
+      if (profile?.household_id) {
+        router.push("/onboarding/profile");
+      }
+    };
+    checkHousehold();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      setError("Du musst angemeldet sein, um fortzufahren.");
-      setLoading(false);
-      return;
-    }
-
-    const response = await fetch("/api/household/create", {
+    const res = await fetch("/api/household/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: householdName }),
+      body: JSON.stringify({ name }),
     });
 
-    if (!response.ok) {
-      const { error: apiError } = await response.json();
-      setError(apiError || "Haushalt konnte nicht erstellt werden.");
+    const json = await res.json();
+
+    if (!res.ok) {
+      setError(json.error || "Fehler beim Erstellen.");
       setLoading(false);
       return;
     }
@@ -43,32 +54,23 @@ export default function OnboardingHousehold() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF9] flex items-center justify-center">
-      <div className="bg-white p-6 rounded-2xl shadow-md w-full max-w-md">
-        <div className="flex flex-col items-center mb-6">
-          <Image src="/images/icon.png" alt="Mealzy Logo" width={40} height={40} />
-          <h1 className="text-2xl font-bold text-[#2B2B2B] mt-2">Mealzy</h1>
-          <p className="text-sm text-[#2B2B2B] mt-1">Wie soll euer Haushalt heißen?</p>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="z. B. Familie Schneider"
-            value={householdName}
-            onChange={(e) => setHouseholdName(e.target.value)}
-            className="w-full p-2 border border-[#DADADA] rounded-xl"
-            required
-          />
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-          <button
-            type="submit"
-            className="w-full bg-[#FF715B] text-white py-2 rounded-xl hover:opacity-90 transition"
-            disabled={loading}
-          >
-            {loading ? "Wird erstellt..." : "Haushalt anlegen"}
-          </button>
-        </form>
-      </div>
-    </div>
+    <form onSubmit={handleSubmit} className="p-4 max-w-md mx-auto space-y-4">
+      <h1 className="text-xl font-bold">Wie soll euer Haushalt heißen?</h1>
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="z. B. Familie Müller"
+        required
+        className="w-full p-2 border rounded-xl"
+      />
+      {error && <p className="text-red-500">{error}</p>}
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full bg-[#FF715B] text-white py-2 rounded-xl"
+      >
+        {loading ? "Wird erstellt..." : "Haushalt anlegen"}
+      </button>
+    </form>
   );
 }

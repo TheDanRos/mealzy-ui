@@ -1,4 +1,4 @@
-// src/app/api/household/create/route.ts
+// src/app/api/profile/create/route.ts
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -12,28 +12,16 @@ export async function POST(request: Request) {
 
   const { name } = await request.json();
   if (!name || name.length < 2) {
-    return NextResponse.json({ error: "Ungültiger Haushaltsname." }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiger Name." }, { status: 400 });
   }
 
-  // Haushalt erstellen
-  const { data: household, error: householdError } = await supabase
-    .from("households")
-    .insert({ name })
-    .select()
-    .single();
-
-  if (householdError) {
-    return NextResponse.json({ error: "Fehler beim Erstellen des Haushalts." }, { status: 500 });
-  }
-
-  // Profil aktualisieren
   const { error: updateError } = await supabase
     .from("profiles")
-    .update({ household_id: household.id })
+    .update({ name })
     .eq("id", user.id);
 
   if (updateError) {
-    return NextResponse.json({ error: "Haushalt konnte nicht verknüpft werden." }, { status: 500 });
+    return NextResponse.json({ error: "Profil konnte nicht aktualisiert werden." }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });
