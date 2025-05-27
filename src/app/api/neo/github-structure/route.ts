@@ -1,6 +1,3 @@
-// SPLIT 1: /api/neo/github-structure
-// Gibt reduzierte Dateiliste zurück
-
 import { NextResponse } from 'next/server'
 import axios from 'axios'
 
@@ -15,26 +12,25 @@ const github = axios.create({
   }
 })
 
-export async function GET() {
-  try {
-    const { data: files } = await github.get(`/repos/${REPO}/contents/`)
-    return NextResponse.json({
-      files: interface GitHubFile {
+// ✅ Interface oben definieren
+interface GitHubFile {
   name: string
   type: string
   [key: string]: any
 }
 
-const simplifiedFiles = (files as GitHubFile[]).map(f => ({
-  name: f.name,
-  type: f.type
-})).slice(0, 20)
+export async function GET() {
+  try {
+    const { data: files } = await github.get(`/repos/${REPO}/contents/`)
 
-return NextResponse.json({ files: simplifiedFiles })
-.slice(0, 20)
-    })
+    const simplifiedFiles = (files as GitHubFile[]).map(f => ({
+      name: f.name,
+      type: f.type
+    })).slice(0, 20)
+
+    return NextResponse.json({ files: simplifiedFiles })
   } catch (err: any) {
-  console.error('Fehler bei github-metadata:', err.message)
+    console.error('Fehler bei github-structure:', err.message)
     return NextResponse.json({ error: 'Strukturanalyse fehlgeschlagen' }, { status: 500 })
   }
 }
