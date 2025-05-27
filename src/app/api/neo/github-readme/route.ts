@@ -12,13 +12,21 @@ const github = axios.create({
   }
 })
 
+type GitHubFile = {
+  name: string
+  download_url: string
+  [key: string]: any
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
-  const lineCount = parseInt(searchParams.get('lines') || '5') // Standard: 5 Zeilen
+  const lineCount = parseInt(searchParams.get('lines') || '5')
 
   try {
     const { data: rootFiles } = await github.get(`/repos/${REPO}/contents/`)
-    const readmeFile = (rootFiles as { name: string }[]).find((f) =>
+    const typedFiles = rootFiles as GitHubFile[]
+
+    const readmeFile = typedFiles.find((f) =>
       f.name.toLowerCase().startsWith('readme')
     )
     if (!readmeFile) return NextResponse.json({ readme: null })
