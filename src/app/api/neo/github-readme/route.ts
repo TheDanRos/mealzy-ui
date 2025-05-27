@@ -21,8 +21,8 @@ export async function GET() {
 
     const { data: content } = await github.get(readmeFile.download_url)
     return NextResponse.json({ readme: content.slice(0, 500) })
-  } catch (err) {
-    console.error('Fehler bei github-readme:', err.message)
+  } catch (err: any) {
+  console.error('Fehler bei github-metadata:', err.message)
     return NextResponse.json({ error: 'README konnte nicht geladen werden' }, { status: 500 })
   }
 }

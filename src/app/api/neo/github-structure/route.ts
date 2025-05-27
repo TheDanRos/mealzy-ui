@@ -21,8 +21,8 @@ export async function GET() {
     return NextResponse.json({
       files: files.map(f => ({ name: f.name, type: f.type })).slice(0, 20)
     })
-  } catch (err) {
-    console.error('Fehler bei github-structure:', err.message)
+  } catch (err: any) {
+  console.error('Fehler bei github-metadata:', err.message)
     return NextResponse.json({ error: 'Strukturanalyse fehlgeschlagen' }, { status: 500 })
   }
 }

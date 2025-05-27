@@ -20,8 +20,8 @@ export async function GET() {
       description: repoInfo.description,
       stars: repoInfo.stargazers_count
     })
-  } catch (err) {
-    console.error('Fehler bei github-metadata:', err.message)
+  } catch (err: any) {
+  console.error('Fehler bei github-metadata:', err.message)
     return NextResponse.json({ error: 'Metadaten konnten nicht geladen werden' }, { status: 500 })
   }
 }
