@@ -19,7 +19,19 @@ export async function GET() {
   try {
     const { data: files } = await github.get(`/repos/${REPO}/contents/`)
     return NextResponse.json({
-      files: files.map(f => ({ name: f.name, type: f.type })).slice(0, 20)
+      files: interface GitHubFile {
+  name: string
+  type: string
+  [key: string]: any
+}
+
+const simplifiedFiles = (files as GitHubFile[]).map(f => ({
+  name: f.name,
+  type: f.type
+})).slice(0, 20)
+
+return NextResponse.json({ files: simplifiedFiles })
+.slice(0, 20)
     })
   } catch (err: any) {
   console.error('Fehler bei github-metadata:', err.message)
