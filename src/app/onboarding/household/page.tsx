@@ -1,4 +1,3 @@
-// src/app/onboarding/household/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -18,16 +17,28 @@ export default function OnboardingHousehold() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
       const { data: profile } = await supabase
         .from("profiles")
         .select("household_id")
-        .eq("id", user?.id)
+        .eq("id", user.id)
         .single();
 
-      if (profile?.household_id) {
+      if (profile === null) {
+        // Kein Profil gefunden, bleib hier – optional könntest du es initial anlegen
+        return;
+      }
+
+      if (profile.household_id) {
         router.push("/onboarding/profile");
       }
     };
+
     checkHousehold();
   }, []);
 
