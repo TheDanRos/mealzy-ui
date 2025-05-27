@@ -15,7 +15,15 @@ const github = axios.create({
 export async function GET() {
   try {
     const { data: rootFiles } = await github.get(`/repos/${REPO}/contents/`)
-    const readmeFile = rootFiles.find(f => f.name.toLowerCase().startsWith('readme'))
+    interface GitHubFile {
+  name: string;
+  [key: string]: any;
+}
+
+const readmeFile = (rootFiles as GitHubFile[]).find((f) =>
+  f.name.toLowerCase().startsWith('readme')
+)
+
 
     if (!readmeFile) return NextResponse.json({ readme: null })
 
