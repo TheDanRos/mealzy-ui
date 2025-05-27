@@ -12,25 +12,30 @@ const github = axios.create({
   }
 })
 
-export async function GET() {
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const lineCount = parseInt(searchParams.get('lines') || '5') // Standard: 5 Zeilen
+
   try {
     const { data: rootFiles } = await github.get(`/repos/${REPO}/contents/`)
-    interface GitHubFile {
-  name: string;
-  [key: string]: any;
-}
-
-const readmeFile = (rootFiles as GitHubFile[]).find((f) =>
-  f.name.toLowerCase().startsWith('readme')
-)
-
-
+    const readmeFile = (rootFiles as { name: string }[]).find((f) =>
+      f.name.toLowerCase().startsWith('readme')
+    )
     if (!readmeFile) return NextResponse.json({ readme: null })
 
     const { data: content } = await github.get(readmeFile.download_url)
-    return NextResponse.json({ readme: content.slice(0, 500) })
+    const lines = content
+      .split('\n')
+      .filter((line) => line.trim().length > 0)
+      .slice(0, lineCount)
+      .join('\n')
+
+    return NextResponse.json({ readme: lines })
   } catch (err: any) {
-  console.error('Fehler bei github-metadata:', err.message)
-    return NextResponse.json({ error: 'README konnte nicht geladen werden' }, { status: 500 })
+    console.error('Fehler bei github-readme:', err.message)
+    return NextResponse.json(
+      { error: 'README konnte nicht geladen werden' },
+      { status: 500 }
+    )
   }
 }
