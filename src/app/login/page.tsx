@@ -1,23 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation"; // ✅ Richtig für App Router
-import { createClient } from "@supabase/supabase-js";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClient();
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        router.push("/dashboard");
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +40,7 @@ export default function LoginPage() {
       toast.error("Login fehlgeschlagen", { description: error.message });
     } else {
       toast.success("Login erfolgreich");
-      router.push("/dashboard");
+      // Redirect wird durch onAuthStateChange übernommen
     }
 
     setLoading(false);
