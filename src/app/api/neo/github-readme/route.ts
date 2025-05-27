@@ -20,7 +20,7 @@ type GitHubFile = {
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
-  const lineCount = parseInt(searchParams.get('lines') || '5')
+  const lineCount = parseInt(searchParams.get('lines') || '5') // Standard: 5 Zeilen
 
   try {
     const { data: rootFiles } = await github.get(`/repos/${REPO}/contents/`)
@@ -34,7 +34,7 @@ export async function GET(req: Request) {
     const { data: content } = await github.get(readmeFile.download_url)
     const lines = content
       .split('\n')
-      .filter((line) => line.trim().length > 0)
+      .filter((line: string) => line.trim().length > 0)
       .slice(0, lineCount)
       .join('\n')
 
